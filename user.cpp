@@ -9,7 +9,7 @@ User::User(const MyString& _name, const MyString& _pass)
 	{
 		throw std::exception("Invalid password");
 	}
-	name = std::move(_name);
+	name = _name;
 	pass = picosha2::hash256_hex_string(std::string(_pass.getStr())).c_str();
 	id = xg::newGuid();
 }
@@ -42,7 +42,7 @@ bool User::validateUsername(const MyString& username)
 
 bool User::validatePass(const MyString& pass)
 {
-	char fnArr[3][2] = { {'a','z'},{'A','Z'},{'1','9'}};
+	char fnArr[3][2] = { {'a','z'},{'A','Z'},{'0','9'}};
 	return pass.isBetween(fnArr, 3) && (pass.length()>=8);
 }
 

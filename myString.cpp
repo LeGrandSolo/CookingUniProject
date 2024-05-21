@@ -10,6 +10,13 @@ MyString::MyString()
 
 MyString::MyString(const char* _str)
 {
+	if (_str == nullptr)
+	{
+		str = nullptr;
+		size = 0;
+		capacity = 0;
+		return;
+	}
 	copy(str, _str);
 	capacity = strlen(_str);
 	size = capacity;
@@ -29,6 +36,13 @@ MyString::~MyString()
 
 MyString::MyString(const MyString& other)
 {
+	if (!other.length())
+	{
+		str = nullptr;
+		size = 0;
+		capacity = 0;
+		return;
+	}
 	copy(str, other.str);
 	size = other.size;
 	capacity = other.capacity;
@@ -43,6 +57,12 @@ MyString& MyString::operator=(const MyString& other)
 		{
 			delete[]str;
 		}
+		else {
+			str = nullptr;
+			size = 0;
+			capacity = 0;
+			return *this;
+		}
 		copy(str, other.str);
 		size = other.size;
 		capacity = other.capacity;
@@ -56,6 +76,12 @@ MyString& MyString::operator=(const char* _str)
 	if (_str != nullptr)
 	{
 		delete[]str;
+	}
+	else {
+		str = nullptr;
+		size = 0;
+		capacity = 0;
+		return *this;
 	}
 	copy(str, _str);
 	capacity = strlen(_str);
@@ -117,13 +143,21 @@ const char* MyString::getStr() const
 	return str;
 }
 
+void MyString::append(const char* otherStr)
+{
+	size_t length = strlen(otherStr);
+	enlargeIfNeeded(length);
+	strcat_s(str, capacity, otherStr);
+	size += length;
+}
+
 
 
 void MyString::enlargeIfNeeded(size_t catSize)
 {
 	if (size + catSize >= capacity)
 	{
-		if (!str)
+		if (!str || capacity == 0)
 		{
 			capacity = 5;
 			str = new char[capacity];
@@ -156,17 +190,17 @@ void MyString::copy(char*& dest, const char* src)
 
 std::istream& operator>>(std::istream& istream, MyString& obj)
 {
-	unsigned length = 0;
+	obj = "";
 	while (istream.peek() != '\n' && istream.peek()!=' ')
 	{
 		// 1 for \0
 		char c1[2];
 		istream.get(c1,2);
-		obj.enlargeIfNeeded(1);
-		strcat_s(obj.str, obj.capacity, c1);
-		obj.size++;
+		obj.append(c1);
 	}
-	char c;
-	istream.get(c);
+	istream.ignore(1);
+	obj.enlargeIfNeeded(1);
+	obj.str[obj.size] = '\0';
+	obj.size++;
 	return istream;
 }

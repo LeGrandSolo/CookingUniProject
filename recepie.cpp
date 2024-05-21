@@ -1,98 +1,87 @@
 #include "recepie.h"
 
-Recepie::Recepie(const char* _title, unsigned _prepareTime, char** _productList, size_t prodListLength, const char* _stepsDesc, char** _imageLinks, size_t imageLinksLength, time_t date):title(_title),stepsDesc(_stepsDesc)
+Recepie::Recepie(const MyString _title, unsigned prepareTime)
 {
-	prepareTime = _prepareTime;
-	productList = new MyString[prodListLength];
-	prodLength = prodListLength;
-	for (size_t i = 0; i < prodListLength; i++)
-	{
-		productList[i] = _productList[i];
-	}
-	imageLinks = new MyString[imageLinksLength];
-	imgLinksLength = imageLinksLength;
-	for (size_t i = 0; i < imageLinksLength; i++)
-	{
-		imageLinks[i] = _imageLinks[i];
-	}
-	date = time(0);
+	title = _title;
+	prepareTime = prepareTime;
 	ratingSumed = 0;
 	ratesLength = 0;
-	id = xg::newGuid();
-}
-
-Recepie::~Recepie()
-{
-	delete[] productList;
-	delete[] imageLinks;
-}
-
-Recepie::Recepie(const Recepie& other):title(other.title), stepsDesc(other.stepsDesc)
-{
-	copyObj(other);
-	id = xg::newGuid();
-}
-
-Recepie& Recepie::operator=(const Recepie& other)
-{
-	if (this != &other)
-	{
-		title = other.title;
-		stepsDesc = other.stepsDesc;
-		id = xg::newGuid();
-		copyObj(other);
-	}
-	return *this;
-}
-
-Recepie::Recepie(Recepie&& other):title(std::move(other.title)),stepsDesc(std::move(other.stepsDesc))
-{
-	move(&other);
-	id = xg::newGuid();
-}
-
-Recepie& Recepie::operator=(Recepie&& other)
-{
-	if (this != &other)
-	{
-		title = std::move(other.title);
-		stepsDesc = std::move(other.stepsDesc);
-		move(&other);
-		id = xg::newGuid();
-	}
-	return *this;
-}
-
-void Recepie::copyObj(const Recepie& other)
-{
-	prepareTime = other.prepareTime;
-	prodLength = other.prodLength;
-	imgLinksLength = other.imgLinksLength;
 	date = time(0);
-	productList = new MyString[prodLength];
-	for (size_t i = 0; i < prodLength; i++)
-	{
-		productList[i] = other.productList[i];
-	}
-	imageLinks = new MyString[imgLinksLength];
-	for (size_t i = 0; i < imgLinksLength; i++)
-	{
-		imageLinks[i] = other.imageLinks[i];
-	}
-	ratingSumed = other.ratingSumed;
-	ratesLength = other.ratesLength;
+	id = xg::newGuid();
 }
 
-void Recepie::move(Recepie* other)
+void Recepie::addProduct(const MyString& name, const MyString& unit, unsigned category, double quantity)
 {
-	prepareTime = other->prepareTime;
-	prodLength = other->prodLength;
-	imgLinksLength = other->imgLinksLength;
-	date = time(0);
-	productList = other->productList;
-	other->productList = nullptr;
-	imageLinks = other->imageLinks;
-	other->imageLinks = nullptr;
-	ratingSumed = other->ratingSumed;
-	ratesLength = other->ratesLength;
+	Product newProd(name, unit, category,quantity);
+	productList.add(newProd);
 }
+
+void Recepie::addImgUrl(const MyString& url)
+{
+	MyString imgUrl = url;
+	imagesUrl.add(imgUrl);
+}
+
+void Recepie::setStepsDesc(const MyString& _stepsDesc)
+{
+	stepsDesc = _stepsDesc;
+}
+
+void Recepie::setCategory(size_t index)
+{
+	if (index<8)
+	{
+		typesOfFood[index] = true;
+	}
+}
+
+const char* Recepie::getTitle() const
+{
+	return title.getStr();
+}
+
+const bool* Recepie::getTypesOfFood() const
+{
+	return typesOfFood;
+}
+
+const char* Recepie::getStepsDesc() const
+{
+	return stepsDesc.getStr();
+}
+
+unsigned Recepie::getPrepareTime() const
+{
+	return prepareTime;
+}
+
+const MyVector<Product>& Recepie::getProdList() const
+{
+	return productList;
+}
+
+const MyVector<MyString>& Recepie::getImagesUrl() const
+{
+	return imagesUrl;
+}
+
+time_t Recepie::getDate()
+{
+	return date;
+}
+
+unsigned Recepie::GetRatingSumed()
+{
+	return ratingSumed;
+}
+
+unsigned Recepie::GetRatesLength()
+{
+	return ratesLength;
+}
+
+const char* Recepie::getId()
+{
+	return id.str().c_str();
+}
+

@@ -19,6 +19,7 @@ public:
 	bool isBetween(char arrOfPairsOfEndAndStartChars[][2],size_t length)const;
 	size_t length()const;
 	const char* getStr()const;
+	void append(const char* otherStr);
 
 private:
 	void enlargeIfNeeded(size_t catSize);

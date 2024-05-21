@@ -4,30 +4,38 @@
 #include <crossguid/guid.hpp>
 #include <ctime>
 #include "myString.h"
+#include "product.h"
+#include "myVector.h"
 
 class Recepie {
 public:
 
-	Recepie();
-	Recepie(const char* _title,unsigned _prepareTime, char** _productList, size_t prodListLength, const char* _stepsDesc,char** _imageLinks, size_t imageLinksLength, time_t date);
-	~Recepie();
-	Recepie(const Recepie& other);
-	Recepie& operator=(const Recepie& other);
+	Recepie(const MyString _title, unsigned prepareTime);
 
-	Recepie(Recepie&& other);
-	Recepie& operator=(Recepie&& other);
+	void addProduct(const MyString& name, const MyString& unit, unsigned category, double quantity);
+	void addImgUrl(const MyString& url);
+	void setStepsDesc(const MyString& stepsDesc);
+	void setCategory(size_t index);
+
+	const char* getTitle()const;
+	const bool* getTypesOfFood()const;
+	const char* getStepsDesc()const;
+	unsigned getPrepareTime()const;
+	const MyVector<Product>& getProdList()const;
+	const MyVector<MyString>& getImagesUrl()const;
+	time_t getDate();
+	unsigned GetRatingSumed();
+	unsigned GetRatesLength();
+	const char* getId();
 private:
-	void copyObj(const Recepie& other);
-	void move(Recepie* other);
+
 	MyString title;
-	/*Vegetables; Fruits; Grains; Meat; Seafood; Diary; Eggs; Other*/
+	/*Other ;Vegetables; Fruits; Grains; Meat; Seafood; Dairy; Eggs*/
 	bool typesOfFood[8];
 	unsigned prepareTime;
-	MyString* productList;
-	size_t prodLength;
+	MyVector<Product> productList;
 	MyString stepsDesc;
-	MyString* imageLinks;
-	size_t imgLinksLength;
+	MyVector<MyString> imagesUrl;
 	time_t date;
 	unsigned ratingSumed;
 	unsigned ratesLength;
