@@ -24,9 +24,9 @@ const char* User::getPass() const
 	return pass.getStr();
 }
 
-const char* User::getId() const
+xg::Guid User::getId() const
 {
-	return id.str().c_str();
+	return id;
 }
 
 void User::print() const

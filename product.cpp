@@ -1,6 +1,6 @@
 #include "product.h"
 
-Product::Product(): Product(nullptr,nullptr,0,0)
+Product::Product() : Product(nullptr, nullptr, 0, 0)
 {
 }
 
@@ -10,4 +10,10 @@ Product::Product(const MyString& _name, const MyString& _unit, unsigned _categor
 	unit = _unit;
 	category = _category;
 	quantity = _quantity;
+}
+
+ostream& operator<<(ostream& ostream, const Product& product)
+{
+	ostream << product.name << ' ' << product.unit << ' ' << product.quantity << ' ' << product.category;
+	return ostream;
 }

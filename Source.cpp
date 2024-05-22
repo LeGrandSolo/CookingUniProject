@@ -1,14 +1,15 @@
-#include <iostream>
 #include "user.h"
 #include "myString.h"
-#include <fstream>
 #include <picosha2.h>
 #include <limits>
 #include "auth.h"
+#include <fstream>
+#include  "myVector.h"
 
 using namespace std;
 
 int main() {
+	MyVector<MyString> vec;
 	Auth state;
 	MyString command;
 	cin >> command;
@@ -22,9 +23,9 @@ int main() {
 		else if (!strcmp(command.getStr(), "login"))
 		{
 			state.login();
-			cout << state.getId()<<std::endl;
+			cout << state.getId() << std::endl;
 		}
-		else if(!strcmp(command.getStr(), "add_recepie"))
+		else if (!strcmp(command.getStr(), "add_recepie"))
 		{
 			state.addRecepie();
 		}

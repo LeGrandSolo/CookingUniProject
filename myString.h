@@ -1,6 +1,7 @@
 #ifndef MYSTRING_H
 #define MYSTRING_H
 #include <iostream>
+
 class MyString {
 public:
 	MyString();
@@ -12,11 +13,13 @@ public:
 	MyString& operator=(const char* _str);
 
 	friend std::istream& operator>>(std::istream& istream,MyString& obj);
+	friend std::ostream& operator<<(std::ostream& ostrm, const MyString& obj);
 	
 	MyString(MyString&& other);
 	MyString& operator=(MyString&& other);
 
 	bool isBetween(char arrOfPairsOfEndAndStartChars[][2],size_t length)const;
+	bool equalsInsensitive(const MyString& other)const;
 	size_t length()const;
 	const char* getStr()const;
 	void append(const char* otherStr);

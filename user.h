@@ -9,7 +9,7 @@ public:
 
 	const char* getName()const;
 	const char* getPass()const;
-	const char* getId()const;
+	xg::Guid getId()const;
 
 	void print()const;
 private:

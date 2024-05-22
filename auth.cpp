@@ -1,11 +1,166 @@
 #include "auth.h"
 #include <fstream>
 #include <picosha2.h>
-#include <fstream>
+#include "recepie.h"
+#include "user.h"
+#include <cstring>
 
 using namespace std;
 
 
+void Auth::changeRecepie()
+{
+	MyString requestedName;
+	cin >> requestedName;
+	ifstream fin;
+	fin.open("recepies.txt", ios::in);
+	if (!fin.is_open())
+	{
+		throw exception("File couldn't open for reading");
+	}
+	while (fin)
+	{
+		MyString userId;
+		int objPosition = fin.tellg();
+		fin >> userId;
+		if (strcmp(userId.getStr(), id.getStr()))
+		{
+			cout << "entryToChange:name/stepsDescription/prepareTime/products/imageUrl" << endl;
+			MyString entry;
+			MyString recepieId;
+			MyString recepieName;
+			fin >> userId >> recepieName;
+
+			if (recepieName.equalsInsensitive(requestedName))
+			{
+				char* stepsDesc = new char[10000];
+				fin.getline(stepsDesc, 10000, '#');
+
+				unsigned prepareTime;
+				time_t date;
+				unsigned ratingSum;
+				unsigned ratingLength;
+				fin >> prepareTime >> date >> ratingSum >> ratingLength;
+				bool types[8];
+				for (size_t i = 0; i < 8; i++)
+				{
+					char temp;
+					fin >> temp;
+					int diff = temp - '0';
+					types[i] = diff;
+				}
+				size_t prodLength;
+				fin >> prodLength;
+				MyVector<Product> products;
+				for (size_t i = 0; i < prodLength; i++)
+				{
+					MyString name;
+					MyString unit;
+					double quantity;
+					unsigned category;
+					fin >> name >> unit >> quantity >> category;
+					Product prodEntry(name, unit, category, quantity);
+					products.add(prodEntry);
+				}
+				size_t imgLength;
+				fin >> imgLength;
+				MyVector<MyString>imageUrls;
+				for (size_t i = 0; i < imgLength; i++)
+				{
+					MyString url;
+					fin >> url;
+					imageUrls.add(url);
+				}
+				if (entry.equalsInsensitive(std::move(MyString("name"))))
+				{
+					cout << "New name: " << endl;
+					MyString name;
+					cin >> name;
+					recepieName = name;
+				}
+				if (entry.equalsInsensitive(std::move(MyString("stepsDescription"))))
+				{
+					cout << "New description: " << endl;
+					char* newStepsDesc = new char[10000];
+					cin.getline(newStepsDesc, 10000);
+					delete[]stepsDesc;
+					stepsDesc = newStepsDesc;
+				}
+				if (entry.equalsInsensitive(std::move(MyString("prepareTime"))))
+				{
+					cout << "New prepare time: " << endl;
+					double newPrepareTime;
+					cin >> newPrepareTime;
+					prepareTime = newPrepareTime;
+				}
+				Recepie updated(recepieName, prepareTime);
+				if (entry.equalsInsensitive(std::move(MyString("products"))))
+				{
+					cout << products << endl;
+					cout << "'add' name unit category quantity\\'remove' index(starting from 1)" << endl;
+					MyString command;
+					cin >> command;
+					if (command.equalsInsensitive(std::move(MyString("add"))))
+					{
+						MyString name;
+						MyString unit;
+						double quantity;
+						MyString category;
+						cin >> name >> unit >> quantity >> category;
+						size_t categoryIndex = updated.categoryStrToIndex(category.getStr());
+						Product prodEntry(name, unit, categoryIndex, quantity);
+						products.add(prodEntry);
+					}
+					else if (command.equalsInsensitive(std::move(MyString("remove"))))
+					{
+						size_t index;
+						cin >> index;
+						products.remove(index);
+					}
+				}
+				if (entry.equalsInsensitive(std::move(MyString("imageUrl"))))
+				{
+					cout << products << endl;
+					cout << "'add' url\\'remove' index(starting from 1)" << endl;
+					MyString command;
+					cin >> command;
+					if (command.equalsInsensitive(std::move(MyString("add"))))
+					{
+						MyString url;
+						cin >> url;
+						imageUrls.add(url);
+					}
+					else if (command.equalsInsensitive(std::move(MyString("remove"))))
+					{
+						size_t index;
+						cin >> index;
+						imageUrls.remove(index);
+					}
+				}
+
+				updated.stepsDesc = std::move(MyString(stepsDesc));
+				updated.ratesLength = ratingSum;
+				updated.ratingSumed = ratingLength;
+				xg::Guid oldId(recepieId.getStr());
+				updated.id = oldId;
+				updated.productList = products;
+				updated.imagesUrl = imageUrls;
+				for (size_t i = 0; i < 8; i++)
+				{
+					updated.typesOfFood[i] = types[i];
+				}
+				fWriteRecepie(updated,"recepies.txt");
+				int finalPosition = fin.tellg();
+				//todo remove old
+				delete[]stepsDesc;
+				break;
+			}
+		}
+	}
+}
+
+//add_recepie title prepareTime desc
+//product name unit category quantity
 void Auth::addRecepie()
 {
 	if (id.getStr() != nullptr)
@@ -15,12 +170,18 @@ void Auth::addRecepie()
 		cin >> title >> prepareTime;
 		Recepie newRecepie(title, prepareTime);
 		cout << "Description: " << endl;
-		MyString desc;
-		cin >> desc;
-		newRecepie.setStepsDesc(desc);
+		cin.ignore(1);
+		char desc[10000];
+		cin.getline(desc, 10000);
+		if (strchr(desc, '#'))
+		{
+			throw exception("Invalid character: #");
+		}
+		newRecepie.stepsDesc = std::move(MyString(desc));
+		cout << "Enter: 'product' name unit category quantity || 'imageUrl' url" << endl;
 		MyString command;
 		cin >> command;
-		
+
 		while (!strcmp(command.getStr(), "product") || !strcmp(command.getStr(), "imageUrl"))
 		{
 			while (!strcmp(command.getStr(), "product"))
@@ -28,36 +189,13 @@ void Auth::addRecepie()
 				MyString name;
 				MyString unit;
 				MyString categoryStr;
+				MyString clear;
 				double quantity;
-				cin >> name >> unit >> categoryStr >> quantity;
+				cin >> name >> unit >> categoryStr >> quantity >> clear;
 				/*Other ;Vegetables; Fruits; Grains; Meat; Seafood; Dairy; Eggs*/
-				size_t categoryIndex = 0;
-				if (!strcmp(categoryStr.getStr(), "vegetables"))
-				{
-					categoryIndex = 1;
-				}
-				else if (!strcmp(categoryStr.getStr(), "fruits")) {
-					categoryIndex = 2;
-				}
-				else if (!strcmp(categoryStr.getStr(), "grains")) {
-					categoryIndex = 2;
-				}
-				else if (!strcmp(categoryStr.getStr(), "fruits")) {
-					categoryIndex = 3;
-				}
-				else if (!strcmp(categoryStr.getStr(), "meat")) {
-					categoryIndex = 4;
-				}
-				else if (!strcmp(categoryStr.getStr(), "seafood")) {
-					categoryIndex = 5;
-				}
-				else if (!strcmp(categoryStr.getStr(), "dairy")) {
-					categoryIndex = 6;
-				}
-				else if (!strcmp(categoryStr.getStr(), "eggs")) {
-					categoryIndex = 7;
-				}
+				size_t categoryIndex = newRecepie.categoryStrToIndex(categoryStr.getStr());
 				newRecepie.addProduct(name, unit, categoryIndex, quantity);
+				newRecepie.setCategory(categoryIndex);
 				cin >> command;
 			}
 			while (!strcmp(command.getStr(), "imageUrl"))
@@ -65,24 +203,10 @@ void Auth::addRecepie()
 				MyString imgUrl;
 				cin >> imgUrl;
 				newRecepie.addImgUrl(imgUrl.getStr());
+				cin >> command;
 			}
 		}
-		/*const char* fTitle = newRecepie.getTitle();
-		const bool* typesOfFood = newRecepie.getTypesOfFood();
-		MyString typesOfFoodStr;
-		for (size_t i = 0; i < 8; i++)
-		{
-			typesOfFoodStr.append((typesOfFood[i] - '0'));
-		}
-		const char* fStepsDesc = newRecepie.getStepsDesc();
-		MyVector<Product> productList = newRecepie.getProdList();
-		ofstream fout;
-		fout.open("recepies.txt",ios::out|ios::app);
-		fout << fTitle<< ' ' 
-		for (size_t i = 0; i < productList.getSize(); i++)
-		{
-			
-		}*/
+		fWriteRecepie(newRecepie,"recepies.txt");
 		std::cout << "Recepie added!" << std::endl;
 	}
 	else {
@@ -107,10 +231,10 @@ void Auth::registerUser()
 			User newUser(username, password);
 			const char* newUserName = newUser.getName();
 			const char* newUserPass = newUser.getPass();
-			const char* newUserId = newUser.getId();
+			const char* newUserId = newUser.getId().str().c_str();
 			size_t newUserNameLength = strlen(newUser.getName());
 			size_t newUserPassLength = strlen(newUser.getPass());
-			size_t newUserIdLength = strlen(newUser.getId());
+			size_t newUserIdLength = strlen(newUserId);
 			ofstream fout;
 			fout.open("users.bin", ios::out | ios::app | ios::binary);
 			if (!fout.is_open()) {
@@ -136,7 +260,7 @@ void Auth::registerUser()
 	{
 		std::cout << "Already logged in!";
 	}
-	
+
 }
 
 void Auth::login()
@@ -185,5 +309,20 @@ void Auth::login()
 	else {
 		std::cout << "Already logged in!";
 	}
-	
+
 }
+
+void Auth::fWriteRecepie(Recepie& newRecepie, const char* filename) const
+{
+	ofstream fout;
+	fout.open(filename, ios::out | ios::app);
+	fout << this->id << ' ' << newRecepie.id << ' ' << newRecepie.title << ' ' << newRecepie.stepsDesc << "# " << newRecepie.prepareTime << ' ' << newRecepie.date << ' ' << newRecepie.ratingSumed << ' ' << newRecepie.ratesLength << ' ';
+	for (size_t i = 0; i < 8; i++)
+	{
+		fout << newRecepie.typesOfFood[i];
+		fout << ' ';
+	}
+	fout << newRecepie.productList << newRecepie.imagesUrl << '\n';
+	fout.close();
+}
+

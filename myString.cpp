@@ -133,6 +133,31 @@ bool MyString::isBetween(char arrOfPairsOfEndAndStartChars[][2], size_t length)c
 	return true;
 }
 
+bool MyString::equalsInsensitive(const MyString& other) const
+{
+	if (other.size != size)
+	{
+		return false;
+	}
+	for (size_t i = 0; i < size; i++)
+	{
+		char own = 'a';
+		char otherChr = 'b';
+		if (str[i] >= 'A' && str[i] <= 'Z')
+		{
+			own = (str[i] - 'A') + 'a';
+		}
+		if (other.str[i] >= 'A' && other.str[i] <= 'Z')
+		{
+			otherChr = (str[i] - 'A') + 'a';
+		}
+		if (otherChr != own) {
+			return false;
+		}
+	}
+	return true;
+}
+
 size_t MyString::length()const
 {
 	return strlen(str);
@@ -203,4 +228,10 @@ std::istream& operator>>(std::istream& istream, MyString& obj)
 	obj.str[obj.size] = '\0';
 	obj.size++;
 	return istream;
+}
+
+std::ostream& operator<<(std::ostream& ostrm, const MyString& obj)
+{
+	ostrm << obj.str;
+	return ostrm;
 }
