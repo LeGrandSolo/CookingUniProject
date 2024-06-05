@@ -8,6 +8,7 @@ class Product {
 public:
 	Product();
 	Product(const MyString& _name, const MyString& _unit, unsigned _category, double _quantity);
+	void print();
 	
 	friend ostream& operator<<(ostream& ostream, const Product& product);
 private:

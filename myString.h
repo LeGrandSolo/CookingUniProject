@@ -14,6 +14,11 @@ public:
 
 	friend std::istream& operator>>(std::istream& istream,MyString& obj);
 	friend std::ostream& operator<<(std::ostream& ostrm, const MyString& obj);
+
+	bool operator==(const MyString& other);
+	bool operator==(const char* other);
+
+	bool getline(std::istream& istream,char delim);
 	
 	MyString(MyString&& other);
 	MyString& operator=(MyString&& other);

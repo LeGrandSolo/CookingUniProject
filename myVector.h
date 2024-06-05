@@ -13,12 +13,16 @@ public:
 
 	void add(const T& elem);
 	void remove(size_t index);
-	void ensure();
+	void clear();
 
 	template<typename U>
 	friend ostream& operator<<(ostream& ostrm, const MyVector<U>& vector);
 
+	T& operator[](size_t index);
+
+
 private:
+	void ensure();
 	void copy(const MyVector& other);
 	T* arr;
 	size_t capacity;
@@ -93,6 +97,12 @@ inline void MyVector<T>::remove(size_t index)
 }
 
 template<typename T>
+inline void MyVector<T>::clear()
+{
+	size = 0;
+}
+
+template<typename T>
 inline void MyVector<T>::ensure()
 {
 	if (size + 1>= capacity)
@@ -113,17 +123,30 @@ inline void MyVector<T>::ensure()
 	}
 }
 
+
+template<typename T>
+inline T& MyVector<T>::operator[](size_t index)
+{
+	if (index < size)
+	{
+		return arr[index];
+	}
+}
+
+
 template<typename T>
 inline void MyVector<T>::copy(const MyVector& other)
 {
-	if (other.arr != nullptr)
+	if (other.arr == nullptr)
 	{
 		arr = nullptr;
 		size = 0;
 		capacity = 0;
 		return;
 	}
-	for (size_t i = 0; i < size; i++)
+	delete[]arr;
+	arr = new T[other.capacity];
+	for (size_t i = 0; i < other.size; i++)
 	{
 		arr[i] = other.arr[i];
 	}
@@ -134,7 +157,11 @@ inline void MyVector<T>::copy(const MyVector& other)
 template<typename U>
 ostream& operator<<(ostream& ostrm, const MyVector<U>& vector)
 {
-	ostrm << vector.size<<' ';
+	ostrm << vector.size << ' ';
+	if (vector.size == 0)
+	{
+		return ostrm;
+	}
 	for (size_t i = 0; i < vector.size; i++)
 	{
 		ostrm << vector.arr[i]<<' ';

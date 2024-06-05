@@ -12,8 +12,19 @@ Product::Product(const MyString& _name, const MyString& _unit, unsigned _categor
 	quantity = _quantity;
 }
 
+void Product::print()
+{
+	cout << " Product Name: " << name << " Unit: " << unit << " Quantity: " << quantity;
+}
+
 ostream& operator<<(ostream& ostream, const Product& product)
 {
-	ostream << product.name << ' ' << product.unit << ' ' << product.quantity << ' ' << product.category;
+	if (&ostream == &std::cout)
+	{
+		cout << " Product Name: " << product.name << " Unit: " << product.unit << " Quantity: " << product.quantity;
+	}
+	else {
+		ostream << product.name << ' ' << product.unit << ' ' << product.quantity << ' ' << product.category;
+	}
 	return ostream;
 }

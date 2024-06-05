@@ -18,8 +18,8 @@ MyString::MyString(const char* _str)
 		return;
 	}
 	copy(str, _str);
-	capacity = strlen(_str);
-	size = capacity;
+	size = strlen(_str);
+	capacity = size + 1;
 }
 
 MyString::MyString(size_t length)
@@ -53,16 +53,7 @@ MyString& MyString::operator=(const MyString& other)
 	if (this != &other)
 	{
 		// copy() deletes if its nullptr
-		if (other.str != nullptr)
-		{
-			delete[]str;
-		}
-		else {
-			str = nullptr;
-			size = 0;
-			capacity = 0;
-			return *this;
-		}
+		delete[]str;
 		copy(str, other.str);
 		size = other.size;
 		capacity = other.capacity;
@@ -73,21 +64,21 @@ MyString& MyString::operator=(const MyString& other)
 MyString& MyString::operator=(const char* _str)
 {
 	// copy() deletes if its nullptr
-	if (_str != nullptr)
+	delete[]str;
+	if (_str == nullptr)
 	{
-		delete[]str;
-	}
-	else {
 		str = nullptr;
 		size = 0;
 		capacity = 0;
 		return *this;
 	}
 	copy(str, _str);
-	capacity = strlen(_str);
-	size = capacity;
+	size = strlen(_str);
+	capacity = size + 1;
 	return *this;
 }
+
+
 
 MyString::MyString(MyString&& other)
 {
@@ -147,9 +138,16 @@ bool MyString::equalsInsensitive(const MyString& other) const
 		{
 			own = (str[i] - 'A') + 'a';
 		}
+		else {
+			own = str[i];
+		}
 		if (other.str[i] >= 'A' && other.str[i] <= 'Z')
 		{
 			otherChr = (str[i] - 'A') + 'a';
+		}
+		else
+		{
+			otherChr = other.str[i];
 		}
 		if (otherChr != own) {
 			return false;
@@ -184,12 +182,12 @@ void MyString::enlargeIfNeeded(size_t catSize)
 	{
 		if (!str || capacity == 0)
 		{
-			capacity = 5;
+			capacity = capacity + catSize + size + 1;
 			str = new char[capacity];
-			strcpy_s(str, 5, "\0");
+			strcpy_s(str, capacity, "\0");
 		}
 		else {
-			capacity *= 2;
+			capacity += catSize + size + 1;
 			char* temp = new char[capacity];
 			strcpy_s(temp, capacity, str);
 			delete[]str;
@@ -204,7 +202,6 @@ void MyString::copy(char*& dest, const char* src)
 {
 	if (src == nullptr)
 	{
-		delete[]dest;
 		dest = nullptr;
 		return;
 	}
@@ -216,17 +213,14 @@ void MyString::copy(char*& dest, const char* src)
 std::istream& operator>>(std::istream& istream, MyString& obj)
 {
 	obj = "";
-	while (istream.peek() != '\n' && istream.peek()!=' ')
+	do
 	{
 		// 1 for \0
 		char c1[2];
-		istream.get(c1,2);
+		istream >> c1;
 		obj.append(c1);
-	}
+	} while (istream.peek() != '\n' && istream.peek() != ' ');
 	istream.ignore(1);
-	obj.enlargeIfNeeded(1);
-	obj.str[obj.size] = '\0';
-	obj.size++;
 	return istream;
 }
 
@@ -234,4 +228,55 @@ std::ostream& operator<<(std::ostream& ostrm, const MyString& obj)
 {
 	ostrm << obj.str;
 	return ostrm;
+}
+
+bool MyString::operator==(const MyString& other)
+{
+	if (!str)
+	{
+		return false;
+	}
+	if (!other.str)
+	{
+		return false;
+	}
+	return !strcmp(str, other.str);
+}
+
+bool MyString::operator==(const char* other)
+{
+	if (!str)
+	{
+		return false;
+	}
+	if (!other)
+	{
+		return false;
+	}
+	return !strcmp(str, other);
+}
+
+bool MyString::getline(std::istream& istream, char delim = '\n')
+{
+	if (istream.eof())
+	{
+		return false;
+	}
+	delete[]str;
+	str = nullptr;
+	size = 0;
+	capacity = 0;
+	while (istream.peek() != delim && istream.good())
+	{
+		// 1 for \0
+		char c1[100];
+		istream.get(c1, 100, delim);
+		append(c1);
+	}
+	if (str == nullptr)
+	{
+		return false;
+	}
+	istream.ignore(1);
+	return true;
 }

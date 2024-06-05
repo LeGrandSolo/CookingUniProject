@@ -10,7 +10,7 @@
 class Recepie {
 public:
 
-
+	Recepie();
 	Recepie(const MyString _title, unsigned prepareTime);
 
 	void addProduct(const MyString& name, const MyString& unit, unsigned category, double quantity);
@@ -32,11 +32,16 @@ public:
 	unsigned GetRatingSumed()const;
 	unsigned GetRatesLength()const;
 	xg::Guid getId()const;*/
+	void fWriteRecepie(const char* filename )const;
+	void print();
+	bool operator==(const Recepie& other);
+
 	friend class Auth;
 private:
-	size_t categoryStrToIndex(const char* str);
+	size_t categoryStrToIndex(const MyString& str);
 	MyVector<Product> productList;
 	MyVector<MyString> imagesUrl;
+	xg::Guid userId;
 	xg::Guid id;
 	MyString title;
 	MyString stepsDesc;
@@ -46,6 +51,7 @@ private:
 	unsigned prepareTime;
 	unsigned ratingSumed;
 	unsigned ratesLength;
+	MyVector<MyString> usersRated;
 };
 
 #endif // !RECEPIE_H

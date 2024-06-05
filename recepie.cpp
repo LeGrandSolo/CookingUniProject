@@ -1,9 +1,14 @@
 #include "recepie.h"
+#include <fstream>
+
+Recepie::Recepie():Recepie(nullptr, 0)
+{
+}
 
 Recepie::Recepie(const MyString _title, unsigned prepareTime)
 {
 	title = _title;
-	prepareTime = prepareTime;
+	this->prepareTime = prepareTime;
 	ratingSumed = 0;
 	ratesLength = 0;
 	date = time(0);
@@ -34,100 +39,67 @@ void Recepie::setCategory(size_t index)
 		typesOfFood[index] = true;
 	}
 }
-//
-//const char* Recepie::getTitle() const
-//{
-//	return title.getStr();
-//}
-//
-//const bool* Recepie::getTypesOfFood() const
-//{
-//	return typesOfFood;
-//}
-//
-//const char* Recepie::getStepsDesc() const
-//{
-//	return stepsDesc.getStr();
-//}
-//
-//unsigned Recepie::getPrepareTime() const
-//{
-//	return prepareTime;
-//}
-//
-//const MyVector<Product>& Recepie::getProdList() const
-//{
-//	return productList;
-//}
-//
-//const MyVector<MyString>& Recepie::getImagesUrl() const
-//{
-//	return imagesUrl;
-//}
-//
-//time_t Recepie::getDate()const 
-//{
-//	return date;
-//}
-//
-//
-//unsigned Recepie::GetRatingSumed()const
-//{
-//	return ratingSumed;
-//}
-//
-//unsigned Recepie::GetRatesLength()const
-//{
-//	return ratesLength;
-//}
-//
-//xg::Guid Recepie::getId()const
-//{
-//	return id;
-//}
-//
-//
-//void Recepie::setId(xg::Guid _id)
-//{
-//	id = _id;
-//}
-//
-//void Recepie::setRatingSumed(unsigned _ratingSum)
-//{
-//	ratingSumed = _ratingSum;
-//}
-//
-//void Recepie::setRatesLength(unsigned _ratingLength)
-//{
-//	ratesLength = _ratingLength;
-//}
 
-size_t Recepie::categoryStrToIndex(const char* str)
+void Recepie::fWriteRecepie(const char* filename) const
+{
+	ofstream fout;
+	fout.open(filename, ios::out | ios::app);
+	fout << userId << ' ' << id << ' ' << title << ' ' << stepsDesc << "# " << prepareTime << ' ' << date << ' ' << ratingSumed << ' ' << ratesLength << ' ';
+	for (size_t i = 0; i < 8; i++)
+	{
+		fout << typesOfFood[i];
+		fout << ' ';
+	}
+	fout << productList << imagesUrl << usersRated<<'\n';
+	fout.close();
+}
+
+void Recepie::print()
+{
+	char buffer[1024];
+	cout << "Title: " << title << endl << " Prepare time: " << prepareTime << endl << " Product list: ";
+	cout<< productList << endl << " Description: " << stepsDesc << endl << " Image urls: " << imagesUrl << endl;
+	if (ratesLength)
+	{
+		double rating = (double)ratingSumed / (double)ratesLength;
+		cout << " Rating: " << rating << endl;
+	}
+	ctime_s(buffer, 1024, &date);
+	cout<< " Date: " << buffer << endl;
+}
+
+bool Recepie::operator==(const Recepie& other)
+{
+	return id == other.id;
+}
+
+
+size_t Recepie::categoryStrToIndex(const MyString& str)
 {
 	size_t categoryIndex = 0;
-	if (!strcmp(str, "vegetables"))
+	if (str.equalsInsensitive("vegetables"))
 	{
 		categoryIndex = 1;
 	}
-	else if (!strcmp(str, "fruits")) {
+	else if (str.equalsInsensitive("fruits")) {
 		categoryIndex = 2;
 	}
-	else if (!strcmp(str, "grains")) {
+	else if (str.equalsInsensitive("grains")) {
 		categoryIndex = 2;
 	}
-	else if (!strcmp(str, "fruits")) {
+	else if (str.equalsInsensitive("meat")) {
 		categoryIndex = 3;
 	}
-	else if (!strcmp(str, "meat")) {
+	else if (str.equalsInsensitive("seafood")) {
 		categoryIndex = 4;
 	}
-	else if (!strcmp(str, "seafood")) {
+	else if (str.equalsInsensitive("dairy")) {
 		categoryIndex = 5;
 	}
-	else if (!strcmp(str, "dairy")) {
+	else if (str.equalsInsensitive("eggs")) {
 		categoryIndex = 6;
 	}
-	else if (!strcmp(str, "eggs")) {
+	else {
 		categoryIndex = 7;
 	}
 	return categoryIndex;
